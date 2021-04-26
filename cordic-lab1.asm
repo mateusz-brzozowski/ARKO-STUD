@@ -1,4 +1,4 @@
-	.data
+.data
 	#Constant CORDIC value 1/K multiplied by scale
 CORDIC:	.word 0x26DD3B6A
 	#Scale to avoid non-integer constant variables 2^30
