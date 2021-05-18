@@ -2,18 +2,17 @@
 	#Constant CORDIC value 1/K multiplied by scale
 CORDIC:	.word 0x26DD3B6A
 	#Size of precomputed lookup table
-L_TABLE_SIZE: 	.word 32
+L_TABLE_SIZE: 	.word 30
 	#Precomputed lookup table
-L_TABLE:	.word 0x3243F6A8, 0x1DAC6705, 0x0FADBAFC, 0x07F56EA6, 0x03FEAB76
-	.word 0x01FFD55B, 0x00FFFAAA, 0x007FFF55, 0x003FFFEA, 0x001FFFFD
-	.word 0x000FFFFF, 0x0007FFFF, 0x0003FFFF, 0x0001FFFF, 0x0000FFFF
-	.word 0x00007FFF, 0x00003FFF, 0x00001FFF, 0x00000FFF, 0x000007FF
-	.word 0x000003FF, 0x000001FF, 0x000000FF, 0x0000007F, 0x0000003F
-	.word 0x0000001F, 0x0000000F, 0x00000008, 0x00000004, 0x00000002
-	.word 0x00000001, 0x00000000
+L_TABLE:	.word 0x20000000, 0x12E4051D, 0x09FB385B, 0x051111D4, 0x028B0D43
+	.word 0x0145D7E1, 0x00A2F61E, 0x00517C55, 0x0028BE53, 0x00145F2E
+	.word 0x000A2F98, 0x000517CC, 0x00028BE6, 0x000145F3, 0x0000A2F9
+	.word 0x0000517C, 0x000028BE, 0x0000145F, 0x00000A2F, 0x00000517
+	.word 0x0000028B, 0x00000145, 0x000000A2, 0x00000051, 0x00000028
+	.word 0x00000014, 0x0000000A, 0x00000005, 0x00000002, 0x00000001
 
 PROMPT_INPUT:	.asciiz "Enter an angle between -1/2 and 1/2, multiplied by 2^8\n"
-PROMPT_OUTPUT:	.asciiz "Results multiplied by 2^8:\n"
+PROMPT_OUTPUT:	.asciiz "Results multiplied by 2^30:\n"
 PORMPT_SIN:	.asciiz "sin = "
 PROMPT_COS:	.asciiz "\ncos = "
 
@@ -30,7 +29,7 @@ main:
 	blt $v0, -128, main
 	bgt $v0, 128, main
 cordic:
-	mul $t5, $v0, 13176794	#int z = theta [pi * rad];
+	sll $t5, $v0, 23	#int z = theta, shifted by 23;
 	lw $t0, CORDIC		#int x = CORDIC;
 	li $t1, 0		#int y = 0;
 	li $t2, 0		#int i = 0;
@@ -70,7 +69,7 @@ exit:
 	syscall
 		
 	li $v0, 1
-	sra $a0, $t1, 22
+	move $a0, $t1
 	syscall
 	
 	li $v0, 4
@@ -78,7 +77,7 @@ exit:
 	syscall
 		
 	li $v0, 1
-	sra $a0, $t0, 22
+	move $a0, $t0
 	syscall
 
 	li $v0, 10
