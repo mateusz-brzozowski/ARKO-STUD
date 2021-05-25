@@ -1,4 +1,3 @@
-//gcc -m32 -O0 -fpack-struct -std=c99 main.c -o main
 #include "f.h"
 #include <stdio.h>
 #include <stddef.h>
@@ -14,7 +13,7 @@ GtkAdjustment* s_value;
 GtkImage* plot;
 
 
-#define OUTPUT_NAME "output.bmp"
+#define BMP_FNAME "output.bmp"
 
 #define BMP_HEADER_SIZE 54
 
@@ -70,7 +69,7 @@ void write_bytes_to_bmp(unsigned char *buffer, size_t size)
 {
     FILE *file;
 
-    file = fopen(OUTPUT_NAME, "wb");
+    file = fopen(BMP_FNAME, "wb");
     if (file == NULL)
     {
         printf("Error");
@@ -128,7 +127,7 @@ void on_change()
 
     write_bytes_to_bmp(bmp_buffer, bmp_size);
     free(bmp_buffer);
-    gtk_image_set_from_file(plot, OUTPUT_NAME);
+    gtk_image_set_from_file(plot, BMP_FNAME);
 }
 
 int main(int argc, char* argv[]) {
