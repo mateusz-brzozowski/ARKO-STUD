@@ -108,7 +108,7 @@ y:
     mulsd xmm7, xmm6
     movq xmm8, xmm1
     mulsd xmm8, xmm6
-    addsd xmm7, xmm1
+    addsd xmm7, xmm8
     addsd xmm7, xmm2
     ret
 
