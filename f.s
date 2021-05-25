@@ -8,6 +8,7 @@ section .text
 
 ;xmm6 - x
 ;xmm7 - y
+;xmm10 - p
 
 global f
 f:
@@ -31,15 +32,27 @@ axis_loop:
     movq xmm6, rax  ; x = -0.5
     mulsd xmm6, xmm1    ; x = -0.5b
     divsd xmm6, xmm0    ; x = -0.5b/a
+    movq xmm10, xmm6
+    addsd xmm10, xmm10  ; p = 2p
 
-    call y  ;q = y(a, b, c, p)
+    call y
 
-    mov r10, 200
+    mov r10, 500
 draw_loop:
 
     cvttsd2si rsi, xmm6 ; (int)x
+    add rsi, 256
     cvttsd2si rdx, xmm7 ; (int)y
+    add rdx, 256
     call set_pixel
+
+    movq xmm8, xmm6
+    movq xmm9, xmm10
+    subsd xmm9, xmm8
+    cvttsd2si rsi, xmm9 ; (int)x
+    add rsi, 256
+    call set_pixel
+
     call x
     call y
 
