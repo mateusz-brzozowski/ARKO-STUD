@@ -34,50 +34,76 @@ axis_loop:
 
     call y  ;q = y(a, b, c, p)
 
+    mov r10, 200
+draw_loop:
+
     cvttsd2si rsi, xmm6 ; (int)x
     cvttsd2si rdx, xmm7 ; (int)y
-    ;set_pixel(rdi - bmp_buffer, rsi - x, rdx - y);
     call set_pixel
-    ;xmm6 - x(xmm6 - new_x,xmm3 - s,xmm0 - a,xmm1 - b);
     call x
-    ;xmm7 - y(xmm0 - a,xmm1 - b,xmm2 - c,xmm6 - new_x);
     call y
+
+    dec r10
+    test r10, r10
+    jnz draw_loop
+
     ret
 
-;xmm0 - x, xmm1 - s, xmm2 - a, xmm3 - b;
-;xmm6 - x(xmm6 - new_x,xmm3 - s,xmm0 - a,xmm1 - b);
+;Global values:
+;xmm0 - a
+;xmm1 - b
+;xmm3 - s
+;xmm7 - y
+
+;Temporary values:
+;xmm6 - x(return)
+;xmm8
+;xmm9
 global x
 x:
-    addsd xmm2, xmm2    ;xmm1 = 2a
-    mulsd xmm2, xmm0    ;xmm1 = 2ax
-    addsd xmm2, xmm3    ;xmm1 = 2ax+b
-    mulsd xmm2, xmm2    ;xmm1 = (2ax+b)^2
+    movq xmm8, xmm0
+    addsd xmm8, xmm8    ;xmm1 = 2a
+    mulsd xmm8, xmm6    ;xmm1 = 2ax
+    addsd xmm8, xmm1    ;xmm1 = 2ax+b
+    mulsd xmm8, xmm8    ;xmm1 = (2ax+b)^2
 
     mov rax, __float64__(1.0)
-    movq xmm3, rax
+    movq xmm9, rax
 
-    addsd xmm2, xmm3    ;xmm1 = (2ax+b)^2 + 1
-    sqrtsd xmm2, xmm2   ;xmm1 = sqrt((2ax+b)^2 + 1))
-    divsd xmm1, xmm2    ;xmm3 = s / xmm1
-    addsd xmm0, xmm1    ;xmm0 = new x !
+    addsd xmm8, xmm9    ;xmm1 = (2ax+b)^2 + 1
+    sqrtsd xmm8, xmm8   ;xmm1 = sqrt((2ax+b)^2 + 1))
+    movq xmm9, xmm3
+    divsd xmm9, xmm8    ;xmm3 = s / xmm1
+    addsd xmm6, xmm9    ;xmm0 = new x !
     ret
 
-global y
+
+;Global values:
+;xmm0 - a
+;xmm1 - b
+;xmm2 - c
+;xmm6 - x
+
+;Temporary values:
+;xmm7 - y (return)
+;xmm8 - bx
+
+; y = ax^2 + bx + c
 y:
-    ; y = ax^2 + bx + c
-    ;
-    mulsd xmm0, xmm3
-    mulsd xmm0, xmm3
-    mulsd xmm1, xmm3
-    addsd xmm0, xmm1
-    addsd xmm0, xmm2
+    movq xmm7, xmm0
+    mulsd xmm7, xmm6
+    mulsd xmm7, xmm6
+    movq xmm8, xmm1
+    mulsd xmm8, xmm6
+    addsd xmm7, xmm1
+    addsd xmm7, xmm2
     ret
 
+;Temporary values:
 ;rdi - bmp_
 ;rsi - x
 ;rdx - y
 
-;global set_pixel
 set_pixel:
     xor rax, rax
     movsx rbx, dword[rdi+18]    ;move width of img to rbx
