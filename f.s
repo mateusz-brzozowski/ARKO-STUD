@@ -11,7 +11,28 @@ section .text
 
 global f
 f:
+    mov r10, 512
 
+axis_loop:
+
+    mov rsi, 256
+    mov rdx, r10
+    call set_pixel
+
+    mov rsi, r10
+    mov rdx, 256
+    call set_pixel
+
+    dec r10
+    test r10, r10
+    jnz axis_loop
+
+    mov rax, __float64__(-0.5)
+    movq xmm6, rax  ; x = -0.5
+    mulsd xmm6, xmm1    ; x = -0.5b
+    divsd xmm6, xmm0    ; x = -0.5b/a
+
+    call y  ;q = y(a, b, c, p)
 
     cvttsd2si rsi, xmm6 ; (int)x
     cvttsd2si rdx, xmm7 ; (int)y
@@ -23,6 +44,8 @@ f:
     call y
     ret
 
+;xmm0 - x, xmm1 - s, xmm2 - a, xmm3 - b;
+;xmm6 - x(xmm6 - new_x,xmm3 - s,xmm0 - a,xmm1 - b);
 global x
 x:
     addsd xmm2, xmm2    ;xmm1 = 2a
@@ -54,10 +77,10 @@ y:
 ;rsi - x
 ;rdx - y
 
-global set_pixel
+;global set_pixel
 set_pixel:
     xor rax, rax
-    movsx rbx, dword[rdi+18]   ;move width of img to rbx
+    movsx rbx, dword[rdi+18]    ;move width of img to rbx
     movsx rcx, dword[rdi+22]    ;move height of img to rcx
     cmp rsi, rbx
     ja exit
