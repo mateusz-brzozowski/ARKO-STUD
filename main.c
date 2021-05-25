@@ -99,21 +99,9 @@ unsigned char *generate_empty_bitmap(unsigned int width, unsigned int height, si
     for (BMP_HEADER_SIZE; i < *output_size; ++i)
     {
         bitmap[i] = 0xff;
-        // if(i % 2 == 0)
-        // {
-        //     bitmap[i] = 0xff;
-        // }
-        // else
-        // {
-        //     bitmap[i] = 0xff;
-        // }
     }
     return bitmap;
 }
-
-double x(double, double, double, double);
-double y(double, double, double, double);
-int set_pixel(unsigned char*, unsigned int, unsigned int);
 
 void f(unsigned char*,double, double, double, double);
 
@@ -130,34 +118,13 @@ void on_change()
     printf("%d\n", bmp_size);
 
     double a = gtk_adjustment_get_value(a_value);
+    if(a == 0 )
+        return;
     double b = gtk_adjustment_get_value(b_value);
     double c = gtk_adjustment_get_value(c_value);
     double s = gtk_adjustment_get_value(s_value);
 
     f(bmp_buffer, a, b, c, s);
-
-    // double p = (-b)/(2*a);
-    // double q = y(a, b, c, p);
-
-    // double new_x = p;
-    // double new_y = q;
-
-    // for(int i = 0; i <= 512; i++)
-    // {
-    //     set_pixel(bmp_buffer, i, 256);
-    //     set_pixel(bmp_buffer, 256, i);
-    // }
-
-    // int colored;
-
-    // do{
-    //     colored = set_pixel(bmp_buffer, (int)new_x + 256, (int)new_y + 256);
-    //     colored |= set_pixel(bmp_buffer, (int)((2*p - new_x) + 256), (int)new_y + 256);
-    //     new_x = x(new_x, s, a, b);
-    //     new_y = y(a, b, c, new_x);
-    //     printf("x: %f, ", new_x);
-    //     printf("y: %f\n", new_y);
-    // }while(colored);
 
     write_bytes_to_bmp(bmp_buffer, bmp_size);
     free(bmp_buffer);
@@ -184,7 +151,9 @@ int main(int argc, char* argv[]) {
     plot = GTK_IMAGE(gtk_builder_get_object(builder, "plot"));
 
     g_object_unref(builder);
-    // gtk_image_set_from_file(plot, OUTPUT_NAME);
+
+    on_change();
+
     gtk_widget_show(window);
     gtk_main();
 
