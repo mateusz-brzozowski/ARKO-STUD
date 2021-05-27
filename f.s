@@ -23,11 +23,11 @@ axis_loop:
 
     mov rsi, 256    ; x = 256
     mov rdx, r10    ; y = i
-    call set_pixel  ; set_pixel(dest_bitmap, x, y)
+    call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
     mov rsi, r10    ; x = i
     mov rdx, 256    ; y = 256
-    call set_pixel  ; set_pixel(dest_bitmap, x, y)
+    call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
     dec r10         ; i--
     test r10, r10   ; i > 0
@@ -47,14 +47,14 @@ draw_loop:
     add rsi, 256    ; x + 256
     cvttsd2si rdx, xmm7 ; (int)y
     add rdx, 256    ; y + 256
-    call set_pixel  ; pixel of right arm
+    call draw_pixel  ; pixel of right arm
 
     movq xmm8, xmm6 ; tmp_x = x
     movq xmm9, xmm10    ; tmp_p = 2p
     subsd xmm9, xmm8    ; tmp_p = 2p - x
     cvttsd2si rsi, xmm9 ; (int)x
     add rsi, 256    ; x + 256
-    call set_pixel  ; pixel of left arm
+    call draw_pixel  ; pixel of left arm
 
     call x  ; count next x
     call y  ; count next y
@@ -129,7 +129,7 @@ y:
 ;rdi
 ;r12
 
-set_pixel:
+draw_pixel:
     xor r12, r12    ; clear r12
     movsx rbx, dword[rdi+18]    ; move width of img to rbx
     movsx rcx, dword[rdi+22]    ; move height of img to rcx
