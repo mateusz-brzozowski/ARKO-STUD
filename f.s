@@ -2,8 +2,9 @@ section .text
 
 ;Global values:
 ;rdi - dest_bitmap
-;rsi - width    (Only Function Argument)
-;rdx - height   (Only Function Argument)
+;rsi - width
+;rdx - height
+;r12 - draw_flag
 ;xmm0 - a
 ;xmm1 - b
 ;xmm2 - c
@@ -20,6 +21,7 @@ section .text
 global f
 f:
     push r12
+    push r13
     mov r10, rdx
     cmp r10, rsi
     cmovl r10, rsi  ; int i = width > height
@@ -31,12 +33,12 @@ f:
 
 axis_loop:
 
-    mov rsi, r8    ; x = half_width
-    mov rdx, r10    ; y = i
+    mov r13, r8    ; x = half_width
+    mov r11, r10    ; y = i
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
-    mov rsi, r10    ; x = i
-    mov rdx, r9    ; y = height
+    mov r13, r10    ; x = i
+    mov r11, r9    ; y = height
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
     dec r10         ; i--
@@ -53,17 +55,18 @@ axis_loop:
     call y  ;get first y value
 
 draw_loop:
-    cvttsd2si rsi, xmm6 ; (int)x
-    add rsi, r8    ; x + half_width
-    cvttsd2si rdx, xmm7 ; (int)y
-    add rdx, r9    ; y + height
+    xor r12, r12    ; clear r12
+    cvttsd2si r13, xmm6 ; (int)x
+    add r13, r8    ; x + half_width
+    cvttsd2si r11, xmm7 ; (int)y
+    add r11, r9    ; y + height
     call draw_pixel  ; pixel of right arm
 
     movq xmm8, xmm6 ; tmp_x = x
     movq xmm9, xmm10    ; tmp_p = 2p
     subsd xmm9, xmm8    ; tmp_p = 2p - x
-    cvttsd2si rsi, xmm9 ; (int)x
-    add rsi, r8    ; x + half_width
+    cvttsd2si r13, xmm9 ; (int)x
+    add r13, r8    ; x + half_width
     call draw_pixel  ; pixel of left arm
 
     call x  ; count next x
@@ -73,6 +76,7 @@ draw_loop:
     ja draw_loop    ; if yes, draw next
 
     pop r12
+    pop r13
     ret
 
 ;Arguments:
@@ -86,7 +90,7 @@ draw_loop:
 ;xmm9 - tmp_value
 
 ;'Return':
-;xmm6
+;xmm6 - x
 x:
     movq xmm8, xmm0 ; tmp = a
     addsd xmm8, xmm8    ;tmp = 2a
@@ -115,7 +119,7 @@ x:
 ;xmm8 - tmp
 
 ;'Return':
-;xmm7
+;xmm7 - y
 y:
     movq xmm7, xmm0 ; y = a
     mulsd xmm7, xmm6    ; y = ax
@@ -128,33 +132,32 @@ y:
 
 ;Arguments:
 ;rdi - bmp_plot
-;rsi - x
-;rdx - y
+;r13 - x
+;r11 - y
 
 ;Temporary values:
-;rbx - width
-;rcx - height
+;rbx - temp_width
+;rcx - temp_height
 
 ;'Return':
-;rdi
-;r12
+;r12 - draw_flag
 
 draw_pixel:
-    xor r12, r12    ; clear r12
-    movsx rbx, dword[rdi+18]    ; move width of img to rbx
-    movsx rcx, dword[rdi+22]    ; move height of img to rcx
-    cmp rsi, rbx    ; x > width
+    mov rbx, rsi    ; temp_width = width
+    mov rcx, rdx    ; temp_height = height
+
+    cmp r13, rbx    ; x > width
     ja exit
-    cmp rdx, rcx    ; y > height
+    cmp r11, rcx    ; y > height
     ja exit
 
     lea rbx, [rbx + rbx*2]  ; width = width * 3
     add rbx, 3  ; width = width + 3
     and rbx, 0xFFFFFFFFFFFFFFFC ; width&~3
-    imul rbx, rdx   ; height = height * y
+    imul rbx, r11   ; height = height * y
 
-    lea rsi, [rsi + rsi*2]  ; x = x * 3
-    add rbx, rsi    ; width = width + x
+    lea r13, [r13 + r13*2]  ; x = x * 3
+    add rbx, r13    ; width = width + x
     add rbx, rdi    ; width = width + bmp
     add rbx, 54 ; width = width + 54
 
