@@ -5,6 +5,8 @@
 
 #define BMP_FNAME "output.bmp"
 #define BMP_HEADER_SIZE 54
+#define BMP_WIDTH 512
+#define BMP_HEIGHT 512
 
 typedef struct __attribute__((__packed__)){
     unsigned char sig_0;
@@ -80,13 +82,13 @@ GtkAdjustment* c_value;
 GtkAdjustment* s_value;
 GtkImage* plot;
 
-void f(unsigned char*,double, double, double, double);
+void f(unsigned char*,int, int, double, double, double, double);
 
 void on_change()
 {
     // BMP initialize
     size_t bmp_size = 0;
-    unsigned char *bmp_buffer = create_white_bmp(512, 512, &bmp_size);
+    unsigned char *bmp_buffer = create_white_bmp(BMP_WIDTH, BMP_HEIGHT, &bmp_size);
 
     // Get values from interface
     double a = gtk_adjustment_get_value(a_value);
@@ -97,7 +99,7 @@ void on_change()
     double s = gtk_adjustment_get_value(s_value);
 
     // assembly function drawing quadratic function
-    f(bmp_buffer, a, b, c, s);
+    f(bmp_buffer, BMP_WIDTH, BMP_HEIGHT, a, b, c, s);
 
     // convert buffer to bmp
     fill_bmp(bmp_buffer, bmp_size);

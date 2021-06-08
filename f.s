@@ -2,6 +2,8 @@ section .text
 
 ;Global values:
 ;rdi - dest_bitmap
+;rsi - width    (Only Function Argument)
+;rdx - height   (Only Function Argument)
 ;xmm0 - a
 ;xmm1 - b
 ;xmm2 - c
@@ -13,20 +15,28 @@ section .text
 ;Temporary values:
 ;xmm8 - tmp_x
 ;xmm9 - tmp_p
+;r10 - iterator
 
 global f
 f:
     push r12
-    mov r10, 512    ; int i = 512
+    mov r10, rdx
+    cmp r10, rsi
+    cmovl r10, rsi  ; int i = width > height
+
+    mov r8, rsi
+    shr r8, 1 ; int half_width = width / 2
+    mov r9, rdx
+    shr r9, 1 ; int half_height = height / 2
 
 axis_loop:
 
-    mov rsi, 256    ; x = 256
+    mov rsi, r8    ; x = half_width
     mov rdx, r10    ; y = i
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
     mov rsi, r10    ; x = i
-    mov rdx, 256    ; y = 256
+    mov rdx, r9    ; y = height
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
     dec r10         ; i--
@@ -44,16 +54,16 @@ axis_loop:
 
 draw_loop:
     cvttsd2si rsi, xmm6 ; (int)x
-    add rsi, 256    ; x + 256
+    add rsi, r8    ; x + half_width
     cvttsd2si rdx, xmm7 ; (int)y
-    add rdx, 256    ; y + 256
+    add rdx, r9    ; y + height
     call draw_pixel  ; pixel of right arm
 
     movq xmm8, xmm6 ; tmp_x = x
     movq xmm9, xmm10    ; tmp_p = 2p
     subsd xmm9, xmm8    ; tmp_p = 2p - x
     cvttsd2si rsi, xmm9 ; (int)x
-    add rsi, 256    ; x + 256
+    add rsi, r8    ; x + half_width
     call draw_pixel  ; pixel of left arm
 
     call x  ; count next x
@@ -91,7 +101,7 @@ x:
     sqrtsd xmm8, xmm8   ;tmp = sqrt((2ax+b)^2 + 1))
     movq xmm9, xmm3 ; tmp_value = s
     divsd xmm9, xmm8    ;tmp_value = s / tmp
-    addsd xmm6, xmm9    ;x = tmp_value
+    addsd xmm6, xmm9    ;x = old_x + tmp_value
     ret
 
 
