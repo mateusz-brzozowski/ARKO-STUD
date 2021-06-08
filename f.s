@@ -22,28 +22,34 @@ global f
 f:
     push r12
     push r13
-    mov r10, rdx
-    cmp r10, rsi
-    cmovl r10, rsi  ; int i = width > height
 
     mov r8, rsi
     shr r8, 1 ; int half_width = width / 2
     mov r9, rdx
     shr r9, 1 ; int half_height = height / 2
 
-axis_loop:
+    mov r10, rdx    ; int i = height
+
+x_axis_loop:
 
     mov r13, r8    ; x = half_width
     mov r11, r10    ; y = i
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
+    dec r10         ; i--
+    jnz x_axis_loop
+
+    mov r10, rsi    ; int i = width
+
+y_axis_loop:
+
     mov r13, r10    ; x = i
     mov r11, r9    ; y = height
     call draw_pixel  ; draw_pixel(dest_bitmap, x, y)
 
+
     dec r10         ; i--
-    test r10, r10   ; i > 0
-    jnz axis_loop
+    jnz y_axis_loop
 
     mov rax, __float64__(-0.5)
     movq xmm6, rax  ; x = -0.5

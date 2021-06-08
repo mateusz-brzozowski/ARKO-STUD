@@ -58,7 +58,7 @@ unsigned char *create_white_bmp(unsigned int width, unsigned int height, size_t 
 
     memcpy(bitmap, &header, BMP_HEADER_SIZE);
     int i = BMP_HEADER_SIZE;
-    for (BMP_HEADER_SIZE; i < *size; ++i)
+    for (; i < *size; ++i)
     {
         bitmap[i] = 0xff;
     }
@@ -80,16 +80,14 @@ GtkAdjustment* a_value;
 GtkAdjustment* b_value;
 GtkAdjustment* c_value;
 GtkAdjustment* s_value;
+GtkAdjustment* bmp_width;
+GtkAdjustment* bmp_height;
 GtkImage* plot;
 
-void f(unsigned char*,int, int, double, double, double, double);
+void f(unsigned char*, int, int, double, double, double, double);
 
 void on_change()
 {
-    // BMP initialize
-    size_t bmp_size = 0;
-    unsigned char *bmp_buffer = create_white_bmp(BMP_WIDTH, BMP_HEIGHT, &bmp_size);
-
     // Get values from interface
     double a = gtk_adjustment_get_value(a_value);
     if(a == 0 )
@@ -97,9 +95,15 @@ void on_change()
     double b = gtk_adjustment_get_value(b_value);
     double c = gtk_adjustment_get_value(c_value);
     double s = gtk_adjustment_get_value(s_value);
+    int width = gtk_adjustment_get_value(bmp_width);
+    int height = gtk_adjustment_get_value(bmp_height);
+
+    // BMP initialize
+    size_t bmp_size = 0;
+    unsigned char *bmp_buffer = create_white_bmp(width, height, &bmp_size);
 
     // assembly function drawing quadratic function
-    f(bmp_buffer, BMP_WIDTH, BMP_HEIGHT, a, b, c, s);
+    f(bmp_buffer, width, height, a, b, c, s);
 
     // convert buffer to bmp
     fill_bmp(bmp_buffer, bmp_size);
@@ -111,7 +115,7 @@ void on_change()
     gtk_image_set_from_file(plot, BMP_FNAME);
 }
 
-void on_destory()
+void on_destroy()
 {
     gtk_main_quit();
 }
@@ -133,11 +137,12 @@ int main(int argc, char* argv[]) {
     b_value = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "b_value"));
     c_value = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "c_value"));
     s_value = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "s_value"));
+    bmp_width = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "bmp_width"));
+    bmp_height = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "bmp_height"));
     plot = GTK_IMAGE(gtk_builder_get_object(builder, "plot"));
 
     g_object_unref(builder);
     gtk_widget_show(window);
-    on_change();
     gtk_main();
 
     return 0;
