@@ -24,12 +24,11 @@ f:
     push r13
 
     mov r8, rsi
-    shr r8, 1 ; int half_width = width / 2
+    sar r8, 1 ; int half_width = width / 2
     mov r9, rdx
-    shr r9, 1 ; int half_height = height / 2
+    sar r9, 1 ; int half_height = height / 2
 
     mov r10, rdx    ; int i = (height - 1)
-    dec r10
 
 x_axis_loop:
 
@@ -41,7 +40,6 @@ x_axis_loop:
     jnz x_axis_loop
 
     mov r10, rsi    ; int i = (width - 1)
-    dec r10
 
 y_axis_loop:
 
@@ -154,15 +152,11 @@ draw_pixel:
     mov rbx, rsi    ; temp_width = width
     mov rcx, rdx    ; temp_height = height
 
-    dec rbx
-    cmp r13, rbx    ; x > (width - 1)
-    ja exit
-    inc rbx
+    cmp r13, rbx    ; x >= width
+    jae exit
 
-    dec rcx
-    cmp r11, rcx    ; y > (height - 1)
-    ja exit
-    inc rcx
+    cmp r11, rcx    ; y >= height
+    jae exit
 
     lea rbx, [rbx + rbx*2]  ; width = width * 3
     add rbx, 3  ; width = width + 3
