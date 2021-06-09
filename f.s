@@ -28,7 +28,8 @@ f:
     mov r9, rdx
     shr r9, 1 ; int half_height = height / 2
 
-    mov r10, rdx    ; int i = height
+    mov r10, rdx    ; int i = (height - 1)
+    dec r10
 
 x_axis_loop:
 
@@ -39,7 +40,8 @@ x_axis_loop:
     dec r10         ; i--
     jnz x_axis_loop
 
-    mov r10, rsi    ; int i = width
+    mov r10, rsi    ; int i = (width - 1)
+    dec r10
 
 y_axis_loop:
 
@@ -152,10 +154,15 @@ draw_pixel:
     mov rbx, rsi    ; temp_width = width
     mov rcx, rdx    ; temp_height = height
 
-    cmp r13, rbx    ; x > width
+    dec rbx
+    cmp r13, rbx    ; x > (width - 1)
     ja exit
-    cmp r11, rcx    ; y > height
+    inc rbx
+
+    dec rcx
+    cmp r11, rcx    ; y > (height - 1)
     ja exit
+    inc rcx
 
     lea rbx, [rbx + rbx*2]  ; width = width * 3
     add rbx, 3  ; width = width + 3
@@ -167,9 +174,10 @@ draw_pixel:
     add rbx, rdi    ; width = width + bmp
     add rbx, 54 ; width = width + 54
 
-    mov r12, 1  ; set r12 1
+
     mov word[rbx], 0x00 ; rbx* = 0x00
     mov byte[rbx+2], 0x00   ; rbx*+2 = 0x00
+    mov r12, 1  ; set r12 1
 
 exit:
     ret

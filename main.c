@@ -5,8 +5,8 @@
 
 #define BMP_FNAME "output.bmp"
 #define BMP_HEADER_SIZE 54
-#define BMP_WIDTH 512
-#define BMP_HEIGHT 512
+#define BMP_WIDTH 360
+#define BMP_HEIGHT 360
 
 typedef struct __attribute__((__packed__)){
     unsigned char sig_0;
@@ -71,7 +71,10 @@ void fill_bmp(unsigned char *buffer, size_t size)
 
     file = fopen(BMP_FNAME, "wb");
     if (file == NULL)
+    {
+        printf("Error");
         exit(-1);
+    }
     fwrite(buffer, 1, size, file);
     fclose(file);
 }
@@ -142,6 +145,7 @@ int main(int argc, char* argv[]) {
     plot = GTK_IMAGE(gtk_builder_get_object(builder, "plot"));
 
     g_object_unref(builder);
+    on_change();
     gtk_widget_show(window);
     gtk_main();
 
